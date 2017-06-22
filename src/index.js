@@ -36,15 +36,16 @@ module.exports = {
     }
 
     // init CLIEngin
+    var pluginPrefix = ``;
     var cli = new CLIEngine({
       useEslintrc: true,
       fix: !!options.fix,
-      plugins: [
-        'eslint-config-airbnb',
-        'eslint-plugin-import',
-        'eslint-plugin-jsx-a11y',
-        'eslint-plugin-react'
-      ],
+      // plugins: [
+      //   `airbnb`,
+      //   `import`,
+      //   `jsx-a11y`,
+      //   `react`
+      // ],
     });
 
     // output messages
