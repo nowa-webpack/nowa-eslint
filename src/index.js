@@ -34,18 +34,17 @@ module.exports = {
       var outputEslintStream = fs.readFileSync(`${path.resolve(__dirname, '..') + path.sep}.eslintrc.js.src`);
       fs.writeFileSync(`${eslintrcPath}.js`, outputEslintStream);
     }
-
+    
     // init CLIEngin
     var pluginPrefix = ``;
     var cli = new CLIEngine({
       useEslintrc: true,
       fix: !!options.fix,
-      // plugins: [
-      //   `airbnb`,
-      //   `import`,
-      //   `jsx-a11y`,
-      //   `react`
-      // ],
+      plugins: [
+        `import`,
+        `jsx-a11y`,
+        `react`
+      ],
     });
 
     // output messages
