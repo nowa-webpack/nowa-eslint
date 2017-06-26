@@ -1,11 +1,9 @@
 var fs = require('fs');
 var path = require('path');
 var pkg = require('../package.json');
-var CLIEngine = require('eslint').CLIEngine;
+var cp = require('child_process');
 
 require('colors');
-
-require('console.table');
 
 module.exports = {
 
@@ -17,7 +15,6 @@ module.exports = {
   ],
 
   action(options) {
-    console.log('\r');
     var currentPath = process.cwd();
     var eslintrcPath = `${currentPath + path.sep}.eslintrc`;
 
@@ -30,49 +27,41 @@ module.exports = {
     // check if .eslintrc.* is exists
     var hasEslintrc = [`${eslintrcPath}.js`, `${eslintrcPath}.yaml`, `${eslintrcPath}.yml`, `${eslintrcPath}.json`, eslintrcPath].some(item => fs.existsSync(item));
     if (!hasEslintrc) {
-      console.warn(String('Your project has no config file for eslint\r\nnowa eslint will create an .eslintrc.js with default rules\r\n').yellow);
-      var outputEslintStream = fs.readFileSync(`${path.resolve(__dirname, '..') + path.sep}.eslintrc.js.src`);
+      console.warn(String('\r\nYour project has no config file for eslint\r\nnowa eslint will create an .eslintrc.js with default rules\r\n').yellow);
+      var outputEslintStream = fs.readFileSync(`${path.resolve(__dirname, '..', '.eslintrc.js.src')}`);
       fs.writeFileSync(`${eslintrcPath}.js`, outputEslintStream);
     }
-    
-    // init CLIEngin
-    var pluginPrefix = ``;
-    var cli = new CLIEngine({
-      useEslintrc: true,
-      fix: !!options.fix,
-      plugins: [
-        `import`,
-        `jsx-a11y`,
-        `react`
-      ],
-    });
 
-    // output messages
-    var report = cli.executeOnFiles(targetFilesAndDirectorys);
-    if (report.errorCount || report.warningCount) {
-      report.results.forEach((item) => {
-        if (item.errorCount || item.warningCount) {
-          console.log(item.filePath);
-          var msgs = item.messages.map(innerItem => ({
-            'line/column': `${innerItem.line}/${innerItem.column}`,
-            severity: innerItem.severity === 1 ? 'warn' : 'error',
-            message: innerItem.message,
-            rule: innerItem.ruleId,
-          }));
-          console.table(msgs);
+    // create command line string with options
+    var eslintPath = path.resolve(__dirname, '..', 'node_modules', '.bin', 'eslint');
+    var commandStr = `${eslintPath} `;
+    if (!options.files) {
+      var defaultSource = 'src';
+      var abcPath = path.resolve(currentPath, 'abc.json');
+      if (fs.existsSync(abcPath)) {
+        var abc = JSON.parse(fs.readFileSync(abcPath));
+        if (abc && abc.options && abc.options.src) {
+          defaultSource = abc.options.src;
         }
-      });
-      console.log(String(`  ${report.errorCount + report.warningCount} problems (${report.errorCount} errors, ${report.warningCount} warnings)`).red);
-      if (report.fixableErrorCount || report.fixableWarningCount) {
-        console.log(String(`  ${report.fixableErrorCount} error, ${report.fixableWarningCount} warnings potentially fixable with the \`--fix\` option.`).red);
       }
+      commandStr = `${commandStr + defaultSource} `;
     } else {
-      console.log(String('Congratulations on your code with 0 problems').green);
+      commandStr = `${commandStr + targetFilesAndDirectorys.join(' ')} `;
+    }
+    if (options.fix) {
+      commandStr = `${commandStr}` + '--fix' + ' ';
     }
 
-    // if --fix then eslint --fix
-    if (options.fix) {
-      CLIEngine.outputFixes(report);
-    }
+    // eslint command running
+    var term = cp.exec(commandStr);
+    term.stdout.on('data', (data) => {
+      console.log(data.toString());
+    });
+    term.stderr.on('data', (data) => {
+      console.log(data.toString().red);
+    });
+    term.on('exit', (code) => {
+      // nothing
+    });
   },
 };
