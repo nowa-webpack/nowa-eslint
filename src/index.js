@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var pkg = require('../package.json');
 var cp = require('child_process');
+var os = require('os');
 
 require('colors');
 
@@ -51,9 +52,13 @@ module.exports = {
     if (options.fix) {
       commandStr = `${commandStr}` + '--fix' + ' ';
     }
-
+    
     // eslint command running
-    var term = cp.exec(commandStr);
+    var term = cp.exec(commandStr, {
+      env: {
+        NODE_PATH: path.resolve(os.homedir(), '.nowa', 'install', 'node_modules') + path.delimiter + path.resolve(os.homedir(), '.nowa-gui', 'installation', 'node_modules')
+      },
+    });
     term.stdout.on('data', (data) => {
       console.log(data.toString());
     });
