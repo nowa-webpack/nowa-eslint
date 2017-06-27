@@ -61,26 +61,17 @@ module.exports = {
       commandStr = `${commandStr}` + '--fix' + ' ';
     }
 
+    // eslint runing
     var NODE_PATH = path.join(pluginPath, 'node_modules');
-    var command = commandStr;
-
-    var nowaPath = path.resolve(os.homedir(), '.nowa', 'install');
-    if (process.platform !== 'win32') {
-      command = `NODE_PATH=${NODE_PATH} ${commandStr}`;
-      cp.exec(command, function(err, stdout, stderr) {
-         console.log(`${stdout}`);
-         console.log(`${stderr}`);
-      });
-    } else {
-       cp.exec(command, {
-         env: {
-           NODE_PATH: NODE_PATH
-         }
-       }, function(err, stdout, stderr) {
-         console.log(`${stdout}`);
-         console.log(`${stderr}`);
-      });
-    }
+    cp.exec(commandStr, {
+      env: {
+        NODE_PATH,
+        PATH: process.env.PATH
+      }
+    }, function(err, stdout, stderr) {
+      console.log(`${stdout}`);
+      console.log(`${stderr}`);
+    });
     
   },
 };
