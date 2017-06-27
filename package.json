@@ -1,6 +1,6 @@
 {
   "name": "nowa-eslint",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "An awesome nowa plugin",
   "main": "index.js",
   "scripts": {

@@ -63,7 +63,7 @@ module.exports = {
 
     // eslint runing
     var NODE_PATH = path.join(pluginPath, 'node_modules');
-    cp.exec(commandStr, {
+    var term = cp.exec(commandStr, {
       env: {
         NODE_PATH,
         PATH: process.env.PATH
@@ -72,6 +72,8 @@ module.exports = {
       console.log(`${stdout}`);
       console.log(`${stderr}`);
     });
+
+    term.on('exit', (code) => process.exit(code));
     
   },
 };
