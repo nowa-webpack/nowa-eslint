@@ -73,7 +73,7 @@ module.exports = {
       console.log(`${stderr}`);
     });
 
-    term.on('exit', (code) => process.exit(code));
+    // term.on('exit', (code) => process.exit(code));
     
   },
 };
