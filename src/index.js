@@ -17,7 +17,8 @@ module.exports = {
 
   action(options) {
     var currentPath = process.cwd();
-    var eslintrcPath = `${currentPath + path.sep}.eslintrc`;
+    var eslintrcPath = path.join(currentPath, '.eslintrc');
+    var pluginPath = path.join(__dirname, '..');
 
     // handle files name or dirctory name
     var targetFilesAndDirectorys = ['src'];
@@ -26,15 +27,22 @@ module.exports = {
     }
 
     // check if .eslintrc.* is exists
-    var hasEslintrc = [`${eslintrcPath}.js`, `${eslintrcPath}.yaml`, `${eslintrcPath}.yml`, `${eslintrcPath}.json`, eslintrcPath].some(item => fs.existsSync(item));
+    var hasEslintrc = [
+      `${eslintrcPath}.js`,
+      `${eslintrcPath}.yaml`,
+      `${eslintrcPath}.yml`,
+      `${eslintrcPath}.json`,
+      eslintrcPath]
+        .some(item => fs.existsSync(item));
+
     if (!hasEslintrc) {
       console.warn(String('\r\nYour project has no config file for eslint\r\nnowa eslint will create an .eslintrc.js with default rules\r\n').yellow);
-      var outputEslintStream = fs.readFileSync(`${path.resolve(__dirname, '..', '.eslintrc.js.src')}`);
+      var outputEslintStream = fs.readFileSync(`${path.join(pluginPath, '.eslintrc.js.src')}`);
       fs.writeFileSync(`${eslintrcPath}.js`, outputEslintStream);
     }
 
     // create command line string with options
-    var eslintPath = path.resolve(__dirname, '..', 'node_modules', '.bin', 'eslint');
+    var eslintPath = path.join(pluginPath, 'node_modules', '.bin', 'eslint');
     var commandStr = `${eslintPath} `;
     if (!options.files) {
       var defaultSource = 'src';
@@ -52,21 +60,27 @@ module.exports = {
     if (options.fix) {
       commandStr = `${commandStr}` + '--fix' + ' ';
     }
+
+    var NODE_PATH = path.join(pluginPath, 'node_modules');
+    var command = commandStr;
+
+    var nowaPath = path.resolve(os.homedir(), '.nowa', 'install');
+    if (process.platform !== 'win32') {
+      command = `NODE_PATH=${NODE_PATH} ${commandStr}`;
+      cp.exec(command, function(err, stdout, stderr) {
+         console.log(`${stdout}`);
+         console.log(`${stderr}`);
+      });
+    } else {
+       cp.exec(command, {
+         env: {
+           NODE_PATH: NODE_PATH
+         }
+       }, function(err, stdout, stderr) {
+         console.log(`${stdout}`);
+         console.log(`${stderr}`);
+      });
+    }
     
-    // eslint command running
-    var term = cp.exec(commandStr, {
-      env: {
-        NODE_PATH: path.resolve(os.homedir(), '.nowa', 'install', 'node_modules') + path.delimiter + path.resolve(os.homedir(), '.nowa-gui', 'installation', 'node_modules')
-      },
-    });
-    term.stdout.on('data', (data) => {
-      console.log(data.toString());
-    });
-    term.stderr.on('data', (data) => {
-      console.log(data.toString().red);
-    });
-    term.on('exit', (code) => {
-      // nothing
-    });
   },
 };
