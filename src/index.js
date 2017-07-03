@@ -66,7 +66,8 @@ module.exports = {
     var term = cp.exec(commandStr, {
       env: {
         NODE_PATH,
-        PATH: process.env.PATH
+        PATH: process.env.PATH,
+        FORCE_COLOR: 1
       }
     }, function(err, stdout, stderr) {
       console.log(`${stdout}`);
