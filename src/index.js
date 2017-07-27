@@ -1,8 +1,8 @@
 var fs = require('fs');
 var path = require('path');
-var pkg = require('../package.json');
 var cp = require('child_process');
 var os = require('os');
+var pkg = require('../package.json');
 
 require('colors');
 
@@ -37,13 +37,52 @@ module.exports = {
 
     if (!hasEslintrc) {
       console.warn(String('\r\nYour project has no config file for eslint\r\nnowa eslint will create an .eslintrc.js with default rules\r\n').yellow);
-      var outputEslintStream = fs.readFileSync(`${path.join(pluginPath, '.eslintrc.js.src')}`);
+      var outputEslintStream = fs.readFileSync(path.join(pluginPath, '.eslintrc.js.src'));
       fs.writeFileSync(`${eslintrcPath}.js`, outputEslintStream);
     }
 
     // create command line string with options
+
     var eslintPath = path.join(pluginPath, 'node_modules', '.bin', 'eslint');
-    var commandStr = `${eslintPath} `;
+    if (!fs.existsSync(eslintPath)) {
+      eslintPath = path.join(pluginPath, '..', '.bin', 'eslint');
+    }
+    var args = [];
+    if (!options.files) {
+      var defaultSource = 'src';
+      var abcPath = path.resolve(currentPath, 'abc.json');
+      if (fs.existsSync(abcPath)) {
+        var abc = JSON.parse(fs.readFileSync(abcPath));
+        if (abc && abc.options && abc.options.src) {
+          defaultSource = abc.options.src;
+        }
+      }
+      args.push(defaultSource);
+    } else {
+      args = args.concat(targetFilesAndDirectorys);
+    }
+
+    if (options.fix) {
+      args.push('--fix');
+    }
+
+    var NODE_PATH = path.join(pluginPath, 'node_modules');
+    console.log(eslintPath, args)
+    var term = cp.spawn(eslintPath, args, {
+      env: {
+        NODE_PATH,
+        PATH: process.env.PATH,
+        FORCE_COLOR: 1,
+      }
+    });
+    term.stdout.on('data', (data) => {
+      console.log(`${data}`);
+    });
+    term.stderr.on('data', (data) => {
+      console.log(`${data}`);
+    });
+
+    /*var commandStr = `${eslintPath} `;
     if (!options.files) {
       var defaultSource = 'src';
       var abcPath = path.resolve(currentPath, 'abc.json');
@@ -59,10 +98,10 @@ module.exports = {
     }
     if (options.fix) {
       commandStr = `${commandStr}` + '--fix' + ' ';
-    }
+    }*/
 
     // eslint runing
-    var NODE_PATH = path.join(pluginPath, 'node_modules');
+    /*var NODE_PATH = path.join(pluginPath, 'node_modules');
     var term = cp.exec(commandStr, {
       env: {
         NODE_PATH,
@@ -72,7 +111,7 @@ module.exports = {
     }, function(err, stdout, stderr) {
       console.log(`${stdout}`);
       console.log(`${stderr}`);
-    });
+    });*/
 
     // term.on('exit', (code) => process.exit(code));
     
