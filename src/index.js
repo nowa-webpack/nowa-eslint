@@ -67,7 +67,6 @@ module.exports = {
     }
 
     var NODE_PATH = path.join(pluginPath, 'node_modules');
-    console.log(eslintPath, args)
     var term = cp.spawn(eslintPath, args, {
       env: {
         NODE_PATH,
@@ -81,39 +80,5 @@ module.exports = {
     term.stderr.on('data', (data) => {
       console.log(`${data}`);
     });
-
-    /*var commandStr = `${eslintPath} `;
-    if (!options.files) {
-      var defaultSource = 'src';
-      var abcPath = path.resolve(currentPath, 'abc.json');
-      if (fs.existsSync(abcPath)) {
-        var abc = JSON.parse(fs.readFileSync(abcPath));
-        if (abc && abc.options && abc.options.src) {
-          defaultSource = abc.options.src;
-        }
-      }
-      commandStr = `${commandStr + defaultSource} `;
-    } else {
-      commandStr = `${commandStr + targetFilesAndDirectorys.join(' ')} `;
-    }
-    if (options.fix) {
-      commandStr = `${commandStr}` + '--fix' + ' ';
-    }*/
-
-    // eslint runing
-    /*var NODE_PATH = path.join(pluginPath, 'node_modules');
-    var term = cp.exec(commandStr, {
-      env: {
-        NODE_PATH,
-        PATH: process.env.PATH,
-        FORCE_COLOR: 1
-      }
-    }, function(err, stdout, stderr) {
-      console.log(`${stdout}`);
-      console.log(`${stderr}`);
-    });*/
-
-    // term.on('exit', (code) => process.exit(code));
-    
   },
 };
